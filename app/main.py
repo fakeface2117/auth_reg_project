@@ -1,15 +1,18 @@
 import uvicorn
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends
 from fastapi.openapi.utils import get_openapi
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
 from loguru import logger
 
 from api.metadata.tags_metadata import tags_metadata
+from app.authorization.auth import fastapi_users, auth_backend, current_user
+from app.authorization.rest_models import UserRead, UserCreate
 # from app.authorization.auth import fastapi_users, auth_backend, current_user
 from app.core.config import settings
 # from app.authorization.rest_models import UserRead, UserCreate
 # from app.core.config import CONNECTION_STRING
 from app.db import pg_session
+from app.db.models import User
 
 app = FastAPI(
     docs_url='/api/store/openapi',
@@ -56,22 +59,23 @@ async def startup():
 async def shutdown():
     pass
 
-# app.include_router(
-#     fastapi_users.get_auth_router(auth_backend),
-#     prefix="/api/store/auth",
-#     tags=["Auth"],
-# )
-#
-# app.include_router(
-#     fastapi_users.get_register_router(UserRead, UserCreate),
-#     prefix="/api/store/auth",
-#     tags=["Auth"],
-# )
+app.include_router(
+    fastapi_users.get_auth_router(auth_backend),
+    prefix="/api/store/auth",
+    tags=["Auth"],
+)
+app.include_router(
+    fastapi_users.get_register_router(UserRead, UserCreate),
+    prefix="/api/store/auth",
+    tags=["Auth"],
+)
 
 
-# @app.get("/api/store/protected")
-# def protect_route(user: User = Depends(current_user)):
-#     return f"Hello {user.email}"
+@app.get("/api/store/protected")
+def protect_route(user: User = Depends(current_user)):
+    return f"Hello {user.email}"
+
+
 # app.include_router(users_router, prefix='/api/store/v1/users')
 
 

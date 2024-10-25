@@ -17,6 +17,12 @@ class Role(Base):
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     role: Mapped[uniq_str_notnull]
 
+    user: Mapped[list["User"]] = relationship(
+        "User",
+        back_populates="role",
+        cascade="all, delete-orphan"  # Удаляет пользователей при удалении роли
+    )
+
 
 class User(Base):
     __tablename__ = 'users'
@@ -48,12 +54,17 @@ class User(Base):
         cascade="all, delete-orphan"  # Удаляет заказы при удалении пользователя
     )
 
+    role: Mapped[list["Role"]] = relationship(
+        "Role",
+        back_populates="user",
+    )
+
     # Связь один к одному
     # profile: Mapped["Profile"] = relationship(
     #     "Profile",
     #     back_populates="user", # указывает на атрибут обратной связи в модели Profile
     #     uselist=False, # Определяет что связь не является списком (по умолчанию список)
-    #     lazy="joined" # автоматически подгружает профиль при вызове users
+    #     lazy="joined" # автоматически подгружает профиль при вызове users # TODO попробоавть если что
     # )
 
 
@@ -72,12 +83,12 @@ class Products(Base):
     bucket_store: Mapped[list["StoreBucket"]] = relationship(
         "StoreBucket",
         back_populates="product",
-        # cascade="all, delete-orphan"  # Удаляет товары из корзины при удалении продукта
+        # cascade="all, delete-orphan"
     )
     order_product: Mapped[list["StoreOrderProducts"]] = relationship(
         "StoreOrderProducts",
         back_populates="product",
-        # cascade="all, delete-orphan"  # Удаляет товары из корзины при удалении продукта
+        # cascade="all, delete-orphan"
     )
 
 
@@ -109,12 +120,12 @@ class StoreOrders(Base):
 
     user: Mapped["User"] = relationship(
         "User",
-        back_populates="bucket_order"
+        back_populates="order_store"
     )
     order_product: Mapped[list["StoreOrderProducts"]] = relationship(
         "StoreOrderProducts",
         back_populates="order",
-        # cascade="all, delete-orphan"  # Удаляет товары из корзины при удалении продукта
+        # cascade="all, delete-orphan"
     )
 
 
