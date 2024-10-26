@@ -1,8 +1,8 @@
 import uuid
-from datetime import datetime
+from datetime import datetime, date
 from typing import Text
 
-from sqlalchemy import ForeignKey, text, types, func, JSON
+from sqlalchemy import ForeignKey, text, types, func, JSON, DateTime
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.pg_session import Base, uniq_str_notnull
@@ -30,8 +30,9 @@ class User(Base):
     id: Mapped[uuid.UUID] = mapped_column(types.Uuid, primary_key=True, server_default=text("gen_random_uuid()"))
     email: Mapped[uniq_str_notnull]
     registered_at: Mapped[datetime] = mapped_column(
+        DateTime,
         nullable=False,
-        default=datetime.utcnow,
+        # default=datetime.utcnow,
         server_default=func.now()
     )  # server_default=func.now()
     role_id: Mapped[int] = mapped_column(ForeignKey('roles.id'))
@@ -39,7 +40,7 @@ class User(Base):
 
     first_name: Mapped[str]
     last_name: Mapped[str]
-    birth_date: Mapped[datetime] = mapped_column(nullable=False)
+    birth_date: Mapped[date]  # = mapped_column(DateTime(timezone=False), nullable=False)
     sex: Mapped[SexEnum]
     contacts: Mapped[dict | None] = mapped_column(JSON)
 

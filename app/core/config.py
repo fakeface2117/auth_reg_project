@@ -8,6 +8,9 @@ load_dotenv(dotenv_path=os.path.join(os.path.dirname(os.path.abspath(__file__)),
 
 
 class Settings(BaseSettings):
+    SERVICE_HOST: str = "localhost"
+    SERVICE_PORT: int = 8099
+
     DRIVER: str = "postgresql+asyncpg"
     DB_HOST: str = os.getenv('DB_HOST')
     DB_PORT: int = os.getenv('DB_PORT')

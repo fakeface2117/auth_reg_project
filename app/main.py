@@ -1,3 +1,5 @@
+from contextlib import asynccontextmanager
+
 import uvicorn
 from fastapi import FastAPI, Depends
 from fastapi.openapi.utils import get_openapi
@@ -14,9 +16,34 @@ from app.core.config import settings
 from app.db import pg_session
 from app.db.models import User
 
+
+@asynccontextmanager
+async def lifespan(_app: FastAPI):
+    try:
+        pg_engine = create_async_engine(
+            url=settings.DB_CONNECTION_STRING,
+            future=True,
+            echo=False
+        )
+        logger.info("Success create sqlalchemy engine.")
+
+        pg_session.SessionLocal = async_sessionmaker(
+            bind=pg_engine,
+            expire_on_commit=False,
+            class_=AsyncSession,
+            autocommit=False,
+            autoflush=False
+        )
+        logger.info(f'Swagger: http://{settings.SERVICE_HOST}:{settings.SERVICE_PORT}/api/store/openapi')
+        yield
+    finally:
+        logger.info("App stopp ...")
+
+
 app = FastAPI(
     docs_url='/api/store/openapi',
     openapi_url='/api/store/openapi.json',
+    lifespan=lifespan
 )
 
 
@@ -35,29 +62,6 @@ def custom_openapi():
 
 
 app.openapi = custom_openapi
-
-
-@app.on_event('startup')
-async def startup():
-    pg_engine = create_async_engine(
-        url=settings.DB_CONNECTION_STRING,
-        future=True,
-        echo=False
-    )
-    logger.info("Success create sqlalchemy engine.")
-
-    pg_session.SessionLocal = async_sessionmaker(
-        bind=pg_engine,
-        expire_on_commit=False,
-        class_=AsyncSession,
-        autocommit=False,
-        autoflush=False
-    )
-
-
-@app.on_event('shutdown')
-async def shutdown():
-    pass
 
 app.include_router(
     fastapi_users.get_auth_router(auth_backend),
@@ -82,7 +86,6 @@ def protect_route(user: User = Depends(current_user)):
 if __name__ == "__main__":
     uvicorn.run(
         "main:app",
-        host="localhost",
-        port=8081,
-        # reload=True
+        host=settings.SERVICE_HOST,
+        port=settings.SERVICE_PORT,
     )

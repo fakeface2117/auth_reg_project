@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, date
 from typing import Optional
 from uuid import UUID
 
@@ -12,7 +12,7 @@ class UserRead(schemas.BaseUser[UUID]):
     role_id: int
     first_name: str
     last_name: str
-    birth_date: datetime
+    birth_date: date
     sex: str
     contacts: Optional[dict]
 
@@ -25,7 +25,7 @@ class UserRead(schemas.BaseUser[UUID]):
     # is_verified: bool = False
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 class UserCreate(schemas.BaseUserCreate):
@@ -33,7 +33,7 @@ class UserCreate(schemas.BaseUserCreate):
     password: str
     first_name: str
     last_name: str
-    birth_date: datetime
+    birth_date: date
     sex: str
 
     # username: str
