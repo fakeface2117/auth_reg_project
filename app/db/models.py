@@ -1,9 +1,9 @@
 import uuid
 from datetime import datetime, date
-from typing import Text
+from typing import Text, List
 
 from fastapi_users_db_sqlalchemy import SQLAlchemyBaseUserTableUUID
-from sqlalchemy import ForeignKey, text, types, func, JSON, DateTime
+from sqlalchemy import ForeignKey, text, types, func, JSON, DateTime, ARRAY, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.pg_session import Base, uniq_str_notnull
@@ -86,6 +86,7 @@ class Products(Base):
     counts: Mapped[dict | None] = mapped_column(JSON)
     parameters: Mapped[dict | None] = mapped_column(JSON)
     description: Mapped[Text]
+    # photo_urls: Mapped[List[str] | None] = mapped_column(ARRAY(String)) # TODO в будущем добавить колонку для картинок
 
     bucket_store: Mapped[list["StoreBucket"]] = relationship(
         "StoreBucket",
