@@ -23,7 +23,7 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
     SECRET_KEY: str = "something_secret_key"
     ALGORITHM_HASH: str = "HS256"
-    COOKIE_NAME: str = "store"
+    COOKIE_NAME: str = "access_token"
 
 
 settings = Settings()

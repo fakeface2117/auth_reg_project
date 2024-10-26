@@ -2,11 +2,12 @@ import uuid
 from datetime import datetime, date
 from typing import Text
 
+from fastapi_users_db_sqlalchemy import SQLAlchemyBaseUserTableUUID
 from sqlalchemy import ForeignKey, text, types, func, JSON, DateTime
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.pg_session import Base, uniq_str_notnull
-from app.db.sql_enums import SexEnum, OrderStatusEnum
+from app.db.sql_enums import SexEnum, OrderStatusEnum, RoleEnum
 
 
 # ForeignKey показывает связь между таблицами
@@ -15,7 +16,7 @@ from app.db.sql_enums import SexEnum, OrderStatusEnum
 class Role(Base):
     __tablename__ = 'roles'
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-    role: Mapped[uniq_str_notnull]
+    role: Mapped[RoleEnum]
 
     user: Mapped[list["User"]] = relationship(
         "User",
@@ -24,7 +25,7 @@ class Role(Base):
     )
 
 
-class User(Base):
+class User(SQLAlchemyBaseUserTableUUID, Base):
     __tablename__ = 'users'
 
     id: Mapped[uuid.UUID] = mapped_column(types.Uuid, primary_key=True, server_default=text("gen_random_uuid()"))
@@ -44,6 +45,10 @@ class User(Base):
     sex: Mapped[SexEnum]
     contacts: Mapped[dict | None] = mapped_column(JSON)
 
+    is_active: Mapped[bool]
+    is_superuser: Mapped[bool]
+    is_verified: Mapped[bool]
+
     bucket_store: Mapped[list["StoreBucket"]] = relationship(
         "StoreBucket",
         back_populates="user",
@@ -58,6 +63,7 @@ class User(Base):
     role: Mapped[list["Role"]] = relationship(
         "Role",
         back_populates="user",
+        lazy="joined"  # При подгрузке пользака также подгрузится строчка из роли
     )
 
     # Связь один к одному

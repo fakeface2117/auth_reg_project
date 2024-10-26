@@ -5,7 +5,7 @@ from fastapi import Depends, Request
 from fastapi_users import BaseUserManager, exceptions, models, schemas, UUIDIDMixin
 
 from app.db.models import User
-from app.authorization.utils import get_user_db
+from app.authorization.fastapi_users_auth.utils import get_user_db
 
 from app.core.config import settings
 
@@ -18,10 +18,10 @@ class UserManager(UUIDIDMixin, BaseUserManager[User, UUID]):
         print(f"User {user.id} has registered.")
 
     async def create(
-        self,
-        user_create: schemas.UC,
-        safe: bool = False,
-        request: Optional[Request] = None,
+            self,
+            user_create: schemas.UC,
+            safe: bool = False,
+            request: Optional[Request] = None,
     ) -> models.UP:
         await self.validate_password(user_create.password, user_create)
 
@@ -34,6 +34,7 @@ class UserManager(UUIDIDMixin, BaseUserManager[User, UUID]):
             if safe
             else user_create.create_update_dict_superuser()
         )
+
         password = user_dict.pop("password")
         user_dict["hashed_password"] = self.password_helper.hash(password)
         user_dict["role_id"] = 1
@@ -42,7 +43,24 @@ class UserManager(UUIDIDMixin, BaseUserManager[User, UUID]):
 
         await self.on_after_register(created_user, request)
 
+        created_user.user_role = created_user.role.role
         return created_user
+
+    async def get(self, id: models.ID) -> models.UP:
+        """
+        Get a user by id.
+
+        :param id: Id. of the user to retrieve.
+        :raises UserNotExists: The user does not exist.
+        :return: A user.
+        """
+        user = await self.user_db.get(id)
+
+        if user is None:
+            raise exceptions.UserNotExists()
+
+        user.user_role = user.role.role
+        return user
 
 
 async def get_user_manager(user_db=Depends(get_user_db)):

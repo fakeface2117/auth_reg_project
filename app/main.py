@@ -7,8 +7,8 @@ from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sess
 from loguru import logger
 
 from api.metadata.tags_metadata import tags_metadata
-from app.authorization.auth import fastapi_users, auth_backend, current_user
-from app.authorization.rest_models import UserRead, UserCreate
+from app.authorization.fastapi_users_auth.auth import fastapi_users, auth_backend, current_user
+from app.authorization.fastapi_users_auth.rest_models import UserRead, UserCreate, UserUpdate
 # from app.authorization.auth import fastapi_users, auth_backend, current_user
 from app.core.config import settings
 # from app.authorization.rest_models import UserRead, UserCreate
@@ -64,12 +64,17 @@ def custom_openapi():
 app.openapi = custom_openapi
 
 app.include_router(
+    fastapi_users.get_register_router(UserRead, UserCreate),
+    prefix="/api/store/auth",
+    tags=["Auth"],
+)
+app.include_router(
     fastapi_users.get_auth_router(auth_backend),
     prefix="/api/store/auth",
     tags=["Auth"],
 )
 app.include_router(
-    fastapi_users.get_register_router(UserRead, UserCreate),
+    fastapi_users.get_users_router(UserRead, UserUpdate),
     prefix="/api/store/auth",
     tags=["Auth"],
 )
