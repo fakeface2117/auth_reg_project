@@ -1,0 +1,11 @@
+fastapi-users[sqlalchemy]
+fastapi-users==13.0.0
+uvicorn==0.32.0
+fastapi==0.115.3
+asyncpg==0.30.0
+alembic==1.13.3
+loguru==0.7.2
+PyJWT==2.8.0
+pydantic-settings==2.6.0
+python-dotenv==1.0.1
+SQLAlchemy~=2.0.36
