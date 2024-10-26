@@ -3,7 +3,7 @@ from typing import Optional
 from uuid import UUID
 
 from fastapi_users import schemas
-from pydantic import EmailStr, field_validator
+from pydantic import EmailStr, field_validator, Field
 
 from app.db.sql_enums import SexEnum, RoleEnum
 
@@ -42,7 +42,7 @@ class UserCreate(schemas.BaseUserCreate):
     first_name: str
     last_name: str
     birth_date: date
-    sex: SexEnum
+    sex: SexEnum = Field(..., description='Вариант "man" или "woman"')
 
     @field_validator('birth_date')
     def check_birth_date(cls, value):
