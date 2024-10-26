@@ -7,12 +7,11 @@ from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sess
 from loguru import logger
 
 from api.metadata.tags_metadata import tags_metadata
+from app.api.store_bucket.router_bucket import bucket_router
 from app.authorization.fastapi_users_auth.auth import fastapi_users, auth_backend, current_user
 from app.authorization.fastapi_users_auth.rest_models import UserRead, UserCreate, UserUpdate
-# from app.authorization.auth import fastapi_users, auth_backend, current_user
+from app.core.app_description import description
 from app.core.config import settings
-# from app.authorization.rest_models import UserRead, UserCreate
-# from app.core.config import CONNECTION_STRING
 from app.db import pg_session
 from app.db.models import User
 
@@ -41,6 +40,7 @@ async def lifespan(_app: FastAPI):
 
 
 app = FastAPI(
+    summary="Каой нибудь заголовок документации",
     docs_url='/api/store/openapi',
     openapi_url='/api/store/openapi.json',
     lifespan=lifespan
@@ -51,9 +51,9 @@ def custom_openapi():
     if app.openapi_schema:
         return app.openapi_schema
     openapi_schema = get_openapi(
-        title="STORE api",
+        title="STORE API",
         version="1.0.0",
-        description="Store project",
+        description=description,
         routes=app.routes,
         tags=tags_metadata
     )
@@ -80,11 +80,12 @@ app.include_router(
 )
 
 
-@app.get("/api/store/protected")
+@app.get("/api/store/protected", tags=["Test protect"])
 def protect_route(user: User = Depends(current_user)):
     return f"Hello {user.email}"
 
 
+app.include_router(bucket_router, prefix='/api/store/v1/buckets')
 # app.include_router(users_router, prefix='/api/store/v1/users')
 
 
