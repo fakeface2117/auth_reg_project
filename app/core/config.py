@@ -20,6 +20,10 @@ class Settings(BaseSettings):
     DB_CONNECTION_STRING: str = f"{DRIVER}://{DB_USER}:{DB_PASS}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
     SECRET_AUTH_KEY: str = os.getenv('SECRET_AUTH_KEY')
 
+    MY_EMAIL_ADDRESS: str = os.getenv('MY_EMAIL_ADDRESS')
+    MY_EMAIL_PASSWORD: str = os.getenv('MY_EMAIL_PASSWORD')
+    MY_SMTP_SERVER: str = 'smtp.mail.ru'
+
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
     SECRET_KEY: str = "something_secret_key"
     ALGORITHM_HASH: str = "HS256"
