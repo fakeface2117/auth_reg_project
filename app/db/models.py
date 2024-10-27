@@ -14,10 +14,12 @@ from app.db.sql_enums import SexEnum, OrderStatusEnum, RoleEnum
 # relationship реализует эти связи в orm
 
 class Role(Base):
+    """Таблица ролей"""
     __tablename__ = 'roles'
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     role: Mapped[RoleEnum]
 
+    # на одну роль приходится иного пользователей
     user: Mapped[list["User"]] = relationship(
         "User",
         back_populates="role",
@@ -26,6 +28,7 @@ class Role(Base):
 
 
 class User(SQLAlchemyBaseUserTableUUID, Base):
+    """Таблица пользователей"""
     __tablename__ = 'users'
 
     id: Mapped[uuid.UUID] = mapped_column(types.Uuid, primary_key=True, server_default=text("gen_random_uuid()"))
@@ -49,18 +52,20 @@ class User(SQLAlchemyBaseUserTableUUID, Base):
     is_superuser: Mapped[bool]
     is_verified: Mapped[bool]
 
+    # на одного пользователя приходится несколько товаров в корзине
     bucket_store: Mapped[list["StoreBucket"]] = relationship(
         "StoreBucket",
         back_populates="user",
         cascade="all, delete-orphan"  # Удаляет товары из корзины при удалении пользователя
     )
+    # на одного пользователя приходится несколько заказов
     order_store: Mapped[list["StoreOrders"]] = relationship(
         "StoreOrders",
         back_populates="user",
         cascade="all, delete-orphan"  # Удаляет заказы при удалении пользователя
     )
-
-    role: Mapped[list["Role"]] = relationship(
+    # одному пользователю соответствует одна  роль
+    role: Mapped["Role"] = relationship(
         "Role",
         back_populates="user",
         lazy="joined"  # При подгрузке пользака также подгрузится строчка из роли
@@ -71,11 +76,12 @@ class User(SQLAlchemyBaseUserTableUUID, Base):
     #     "Profile",
     #     back_populates="user", # указывает на атрибут обратной связи в модели Profile
     #     uselist=False, # Определяет что связь не является списком (по умолчанию список)
-    #     lazy="joined" # автоматически подгружает профиль при вызове users # TODO попробоавть если что
+    #     lazy="joined" # автоматически подгружает профиль при вызове users # TODO попробовать если что
     # )
 
 
 class Products(Base):
+    """Таблица имеющихся товаров"""
     __tablename__ = "store_products"
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     created_at: Mapped[datetime] = mapped_column(nullable=False, default=datetime.utcnow, server_default=func.now())
@@ -88,11 +94,13 @@ class Products(Base):
     description: Mapped[Text]
     # photo_urls: Mapped[List[str] | None] = mapped_column(ARRAY(String)) # TODO в будущем добавить колонку для картинок
 
+    # одному товару соответствует много записей в корзине
     bucket_store: Mapped[list["StoreBucket"]] = relationship(
         "StoreBucket",
         back_populates="product",
         # cascade="all, delete-orphan"
     )
+    # одному товару соответствует много записей в заказах
     order_product: Mapped[list["StoreOrderProducts"]] = relationship(
         "StoreOrderProducts",
         back_populates="product",
@@ -101,17 +109,19 @@ class Products(Base):
 
 
 class StoreBucket(Base):
-    """Корзина"""
+    """Корзина. Их не может быть много, поэтому хранит в каждой записи просто данные о товаре"""
     __tablename__ = "store_bucket"
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     user_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.id"), nullable=False)
     product_id: Mapped[int] = mapped_column(ForeignKey("store_products.id"), nullable=False)
     added_at: Mapped[datetime] = mapped_column(nullable=False, default=datetime.utcnow, server_default=func.now())
 
+    # Одна запись в корзине имеет одну запись о пользователе
     user: Mapped["User"] = relationship(
         "User",
         back_populates="bucket_store"
     )
+    # Одна запись в корзине имеет одну запись о товаре
     product: Mapped["Products"] = relationship(
         "Products",
         back_populates="bucket_store"
@@ -128,17 +138,20 @@ class StoreBucket(Base):
 
 
 class StoreOrders(Base):
-    """Таблица заказов"""
+    """Таблица заказов. Их может быть много, поэтому ссылается на таблицу StoreOrderProducts"""
     __tablename__ = "store_orders"
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     user_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.id"), nullable=False)
     order_date: Mapped[datetime] = mapped_column(nullable=False, default=datetime.utcnow, server_default=func.now())
     order_status: Mapped[OrderStatusEnum] = mapped_column(default=OrderStatusEnum.CREATED)
 
+    # одна запись о заказе имеет одну запись о пользователе
     user: Mapped["User"] = relationship(
         "User",
         back_populates="order_store"
     )
+
+    # одна запись о заказе имеет несколько записей о заказанных товарах
     order_product: Mapped[list["StoreOrderProducts"]] = relationship(
         "StoreOrderProducts",
         back_populates="order",
@@ -147,7 +160,7 @@ class StoreOrders(Base):
 
 
 class StoreOrderProducts(Base):
-    """Товары в заказе"""
+    """Таблица товаров в одном заказе"""
     __tablename__ = "store_order_products"
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     order_id: Mapped[int] = mapped_column(ForeignKey("store_orders.id"), nullable=False)
@@ -156,10 +169,13 @@ class StoreOrderProducts(Base):
     product_price: Mapped[int] = mapped_column(nullable=False)
     product_count: Mapped[int] = mapped_column(nullable=False, default=1)
 
+    # одна запись в таблице заказов связана с одним заказом
     order: Mapped["StoreOrders"] = relationship(
         "StoreOrders",
         back_populates="order_product"
     )
+
+    # одна запись о заказанном товаре имеет одну запись о товаре
     product: Mapped["Products"] = relationship(
         "Products",
         back_populates="order_product"
