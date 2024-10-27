@@ -117,6 +117,15 @@ class StoreBucket(Base):
         back_populates="bucket_store"
     )
 
+    # преобразование в словарь для удобства (просто пример)
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "user_id": self.user_id,
+            "product_id": self.product_id,
+            "added_at": self.added_at
+        }
+
 
 class StoreOrders(Base):
     """Таблица заказов"""
