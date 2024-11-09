@@ -1,3 +1,4 @@
+import enum
 from datetime import datetime, date
 from typing import Optional
 from uuid import UUID
@@ -36,6 +37,18 @@ class UserRead(schemas.BaseUser[UUID]):
     # is_verified: bool = False
 
 
+# class ContactsEnum(str, enum.Enum):
+#     VK = "vk"
+#     OK = "ok"
+#     PHONE = "phone"
+#     EMAIL = "email"
+#
+#
+# class UserContacts(Base):
+#     contact: ContactsEnum
+#     values: Any
+
+
 class UserCreate(schemas.BaseUserCreate):
     class Config:
         from_attributes = True
@@ -46,6 +59,8 @@ class UserCreate(schemas.BaseUserCreate):
     last_name: str
     birth_date: date
     sex: SexEnum = Field(..., description='Вариант "man" или "woman"')
+
+    # contacts: Optional[list[UserContacts]] # TODO сделать контакты
 
     @field_validator('birth_date')
     def check_birth_date(cls, value):
