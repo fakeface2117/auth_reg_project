@@ -1,5 +1,5 @@
 import uuid
-from datetime import datetime, date
+from datetime import datetime, date, timezone
 from typing import Text, List
 
 from fastapi_users_db_sqlalchemy import SQLAlchemyBaseUserTableUUID
@@ -84,7 +84,7 @@ class Products(Base):
     """Таблица имеющихся товаров"""
     __tablename__ = "store_products"
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-    created_at: Mapped[datetime] = mapped_column(nullable=False, default=datetime.utcnow, server_default=func.now())
+    created_at: Mapped[datetime] = mapped_column(nullable=False, default=datetime.now(timezone.utc), server_default=func.now())
     updated_at: Mapped[datetime | None]
     name: Mapped[str] = mapped_column(nullable=False, unique=False)
     brand: Mapped[str] = mapped_column(nullable=True, unique=False)
@@ -114,7 +114,7 @@ class StoreBucket(Base):
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     user_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.id"), nullable=False)
     product_id: Mapped[int] = mapped_column(ForeignKey("store_products.id"), nullable=False)
-    added_at: Mapped[datetime] = mapped_column(nullable=False, default=datetime.utcnow, server_default=func.now())
+    added_at: Mapped[datetime] = mapped_column(nullable=False, default=datetime.now(timezone.utc), server_default=func.now())
 
     # Одна запись в корзине имеет одну запись о пользователе
     user: Mapped["User"] = relationship(
@@ -142,7 +142,7 @@ class StoreOrders(Base):
     __tablename__ = "store_orders"
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     user_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.id"), nullable=False)
-    order_date: Mapped[datetime] = mapped_column(nullable=False, default=datetime.utcnow, server_default=func.now())
+    order_date: Mapped[datetime] = mapped_column(nullable=False, default=datetime.now(timezone.utc), server_default=func.now())
     order_status: Mapped[OrderStatusEnum] = mapped_column(default=OrderStatusEnum.CREATED)
 
     # одна запись о заказе имеет одну запись о пользователе

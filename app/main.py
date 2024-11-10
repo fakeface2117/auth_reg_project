@@ -7,7 +7,8 @@ from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sess
 from loguru import logger
 
 from api.metadata.tags_metadata import tags_metadata
-from app.api.store_bucket.router_bucket import bucket_router
+from app.api.v1.products.router_products import products_router
+from app.api.v1.store_bucket.router_bucket import bucket_router
 from app.authorization.fastapi_users_auth.auth import fastapi_users, auth_backend, current_user
 from app.authorization.fastapi_users_auth.rest_models import UserRead, UserCreate, UserUpdate
 from app.core.app_description import description
@@ -86,6 +87,7 @@ def protect_route(user: User = Depends(current_user)):
 
 
 app.include_router(bucket_router, prefix='/api/store/v1/buckets')
+app.include_router(products_router, prefix='/api/store/v1/products')
 # app.include_router(users_router, prefix='/api/store/v1/users')
 
 
