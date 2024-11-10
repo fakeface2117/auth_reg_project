@@ -10,6 +10,7 @@ from app.db.sql_enums import SexEnum, RoleEnum
 
 
 class UserRead(schemas.BaseUser[UUID]):
+    # означает, что класс работает с базой
     class Config:
         from_attributes = True
 
