@@ -40,7 +40,7 @@ async def lifespan(_app: FastAPI):
 
 
 app = FastAPI(
-    summary="Каой нибудь заголовок документации",
+    summary="Какой нибудь заголовок документации",
     docs_url='/api/store/openapi',
     openapi_url='/api/store/openapi.json',
     lifespan=lifespan
