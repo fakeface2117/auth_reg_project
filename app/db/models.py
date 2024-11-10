@@ -36,9 +36,8 @@ class User(SQLAlchemyBaseUserTableUUID, Base):
     registered_at: Mapped[datetime] = mapped_column(
         DateTime,
         nullable=False,
-        # default=datetime.utcnow,
         server_default=func.now()
-    )  # server_default=func.now()
+    )
     role_id: Mapped[int] = mapped_column(ForeignKey('roles.id'))
     hashed_password: Mapped[str]
 
@@ -46,7 +45,7 @@ class User(SQLAlchemyBaseUserTableUUID, Base):
     last_name: Mapped[str]
     birth_date: Mapped[date]  # = mapped_column(DateTime(timezone=False), nullable=False)
     sex: Mapped[SexEnum]
-    contacts: Mapped[dict | None] = mapped_column(JSON)
+    contacts: Mapped[List[dict] | None] = mapped_column(JSON)
 
     is_active: Mapped[bool]
     is_superuser: Mapped[bool]
@@ -84,7 +83,7 @@ class Products(Base):
     """Таблица имеющихся товаров"""
     __tablename__ = "store_products"
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-    created_at: Mapped[datetime] = mapped_column(nullable=False, default=datetime.now(timezone.utc), server_default=func.now())
+    created_at: Mapped[datetime] = mapped_column(nullable=False, default=datetime.now(), server_default=func.now())
     updated_at: Mapped[datetime | None]
     name: Mapped[str] = mapped_column(nullable=False, unique=False)
     brand: Mapped[str] = mapped_column(nullable=True, unique=False)

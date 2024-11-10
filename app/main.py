@@ -20,20 +20,6 @@ from app.db.models import User
 @asynccontextmanager
 async def lifespan(_app: FastAPI):
     try:
-        pg_engine = create_async_engine(
-            url=settings.DB_CONNECTION_STRING,
-            future=True,
-            echo=False
-        )
-        logger.info("Success create sqlalchemy engine.")
-
-        pg_session.SessionLocal = async_sessionmaker(
-            bind=pg_engine,
-            expire_on_commit=False,
-            class_=AsyncSession,
-            autocommit=False,
-            autoflush=False
-        )
         logger.info(f'Swagger: http://{settings.SERVICE_HOST}:{settings.SERVICE_PORT}/api/store/openapi')
         yield
     finally:

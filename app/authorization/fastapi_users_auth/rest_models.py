@@ -1,13 +1,51 @@
 import enum
 from datetime import datetime, date
-from typing import Optional
+from typing import Optional, Any, List
 from uuid import UUID
 
 from fastapi_users import schemas
-from pydantic import EmailStr, field_validator, Field
+from pydantic import EmailStr, field_validator, Field, BaseModel
 
 from app.db.sql_enums import SexEnum, RoleEnum
 
+class ContactsEnum(str, enum.Enum):
+    VK = "VK"
+    OK = "OK"
+    PHONE = "PHONE"
+    EMAIL = "EMAIL"
+
+class UserContacts(BaseModel):
+    contact: ContactsEnum
+    value: Any # TODO доп валидация для контактов
+
+    @field_validator('value')
+    def check_value(cls, value):
+        if cls.contact == "VK":
+            raise ValueError('Вы ввели VK')
+        if cls.contact == "OK":
+            raise ValueError('Вы ввели OK')
+        return value
+
+class UserContactsVK(BaseModel):
+    contact: str = "VK"
+    value: Any # TODO доп валидация для VK
+    @field_validator('value')
+    def check_value(cls, value):
+        return value
+
+class UserContactsOK(BaseModel):
+    contact: str = "OK"
+    value: Any # TODO доп валидация для OK
+    @field_validator('value')
+    def check_value(cls, value):
+        return value
+
+class UserContactsPHONE(BaseModel):
+    contact: str = "PHONE"
+    value: Any # TODO доп валидация для телефона
+    @field_validator('value')
+    def check_value(cls, value):
+        return value
 
 class UserRead(schemas.BaseUser[UUID]):
     # означает, что класс работает с базой
@@ -17,37 +55,16 @@ class UserRead(schemas.BaseUser[UUID]):
     id: UUID
     email: EmailStr
     registered_at: datetime
-    # role_id: int
     user_role: RoleEnum
     first_name: str
     last_name: str
     birth_date: date
     sex: SexEnum
-    contacts: Optional[dict]
+    contacts: Optional[List[UserContactsVK | UserContactsOK | UserContactsPHONE]]
 
     is_active: bool
     is_superuser: bool
     is_verified: bool
-
-    # id: UUID
-    # email: str
-    # username: str
-    # role_id: int
-    # is_active: bool = True
-    # is_superuser: bool = False
-    # is_verified: bool = False
-
-
-# class ContactsEnum(str, enum.Enum):
-#     VK = "vk"
-#     OK = "ok"
-#     PHONE = "phone"
-#     EMAIL = "email"
-#
-#
-# class UserContacts(Base):
-#     contact: ContactsEnum
-#     values: Any
 
 
 class UserCreate(schemas.BaseUserCreate):
@@ -61,7 +78,7 @@ class UserCreate(schemas.BaseUserCreate):
     birth_date: date
     sex: SexEnum = Field(..., description='Вариант "man" или "woman"')
 
-    # contacts: Optional[list[UserContacts]] # TODO сделать контакты
+    contacts: Optional[List[UserContactsVK | UserContactsOK | UserContactsPHONE]] # TODO сделать контакты
 
     @field_validator('birth_date')
     def check_birth_date(cls, value):

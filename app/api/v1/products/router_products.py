@@ -13,5 +13,5 @@ async def add_new_product(
         product_data: AddProductResponse,
         products_service: ProductsService = Depends(get_products_service)
 ):
-    new_product_id = await products_service.add_product(product_data=product_data.dict())
+    new_product_id = await products_service.add_product(product_data=product_data.model_dump())
     return new_product_id
