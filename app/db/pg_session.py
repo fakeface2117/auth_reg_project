@@ -1,9 +1,9 @@
-from typing import Union, AsyncGenerator, Annotated
+from typing import AsyncGenerator, Annotated
 
 from sqlalchemy.ext.asyncio import AsyncSession, AsyncAttrs, create_async_engine, async_sessionmaker
-from sqlalchemy.orm import sessionmaker, DeclarativeBase, mapped_column
+from sqlalchemy.orm import DeclarativeBase, mapped_column
 
-from core.config import settings
+from app.core.config import settings
 
 # metadata = MetaData()
 # Base = declarative_base(metadata=metadata)
