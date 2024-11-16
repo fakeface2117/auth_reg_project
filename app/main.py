@@ -3,7 +3,6 @@ from contextlib import asynccontextmanager
 import uvicorn
 from fastapi import FastAPI, Depends
 from fastapi.openapi.utils import get_openapi
-from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
 from loguru import logger
 
 from api.metadata.tags_metadata import tags_metadata
@@ -13,7 +12,6 @@ from app.authorization.fastapi_users_auth.auth import fastapi_users, auth_backen
 from app.authorization.fastapi_users_auth.rest_models import UserRead, UserCreate, UserUpdate
 from app.core.app_description import description
 from app.core.config import settings
-from app.db import pg_session
 from app.db.models import User
 
 
