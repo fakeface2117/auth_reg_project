@@ -46,6 +46,7 @@ class UserRead(schemas.BaseUser[UUID]):
 
 
 class UserCreate(schemas.BaseUserCreate):
+    # означает, что класс работает с базой
     class Config:
         from_attributes = True
 
@@ -79,3 +80,4 @@ class UserUpdate(schemas.BaseUserUpdate):
 
     first_name: Optional[str] = None
     last_name: Optional[str] = None
+    contacts: Optional[List[UserContactsVK | UserContactsPHONE]] = None
