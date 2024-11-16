@@ -9,7 +9,7 @@ from app.decorators.admin_decorator import admin_verified
 
 products_router = APIRouter()
 
-products_tags: str = "products"
+products_tags: str = "Products"
 
 
 @products_router.post(path='/addProduct', tags=[products_tags])
@@ -21,3 +21,5 @@ async def add_new_product(
 ) -> int:
     new_product_id = await products_service.add_product(product_data=product_data.model_dump())
     return new_product_id
+
+
