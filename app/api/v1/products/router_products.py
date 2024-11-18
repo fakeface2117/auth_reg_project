@@ -1,3 +1,5 @@
+from typing import List, Dict
+
 from fastapi import APIRouter
 from fastapi.params import Depends
 
@@ -13,13 +15,27 @@ products_tags: str = "Products"
 
 
 @products_router.post(path='/addProduct', tags=[products_tags])
-@admin_verified
+@admin_verified # проверка админа
 async def add_new_product(
         product_data: AddProductRequest,
-        user: User = Depends(current_user),
+        user: User = Depends(current_user), # получение текущего пользователя
         products_service: ProductsService = Depends(get_products_service)
 ) -> int:
     new_product_id = await products_service.add_product(product_data=product_data.model_dump())
     return new_product_id
+
+
+@products_router.post(path='/addManyProducts', tags=[products_tags])
+@admin_verified
+async def add_products(
+        products_data: List[AddProductRequest],
+        user: User = Depends(current_user),
+        products_service: ProductsService = Depends(get_products_service)
+) -> List[Dict[str, int]]:
+    new_product_id = await products_service.add_many_products(
+        product_data=[product_data.model_dump() for product_data in products_data])
+    return new_product_id
+
+
 
 
