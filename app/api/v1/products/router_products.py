@@ -21,6 +21,7 @@ async def add_new_product(
         user: User = Depends(current_user), # получение текущего пользователя
         products_service: ProductsService = Depends(get_products_service)
 ) -> int:
+    """Добавление админом одного товара"""
     new_product_id = await products_service.add_product(product_data=product_data.model_dump())
     return new_product_id
 
@@ -32,8 +33,9 @@ async def add_products(
         user: User = Depends(current_user),
         products_service: ProductsService = Depends(get_products_service)
 ) -> List[Dict[str, int]]:
+    """Добавление админом нескольких товаров одновременно"""
     new_product_id = await products_service.add_many_products(
-        product_data=[product_data.model_dump() for product_data in products_data])
+        products_data=[product_data.model_dump() for product_data in products_data])
     return new_product_id
 
 

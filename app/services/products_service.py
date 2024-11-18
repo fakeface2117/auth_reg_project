@@ -16,7 +16,7 @@ class ProductsService:
         new_product = Products(**product_data)
         session.add(new_product)
         try:
-            await session.commit()
+            await session.commit() # flush если промежуточная фиксация данных
         except SQLAlchemyError as e:
             await session.rollback()
             raise e
