@@ -10,7 +10,7 @@ class SexEnum(str, enum.Enum):
 class RoleEnum(str, enum.Enum):
     """В БД 'USER', на бэке 'user' """
     USER = "user"
-    SELLER = "seller"
+    SELLER = "seller" # не ружен
     ADMIN = "admin"
 
 

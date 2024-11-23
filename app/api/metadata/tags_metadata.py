@@ -1,22 +1,19 @@
-auth_description = """
-EP для работы с сервисом авторизации:
-- описать первое
-- описать второе
+description_products = """
+Группа роутеров по работе с товарами
+- создавать, изменять и удалять товары может только админ
 """
-
-bucket_description = """
-Защищенные EP
-"""
-
 tags_metadata = [
     {
         "name": "Auth",
-        "description": auth_description
+        "description": "Группа роутеров по работе с пользователями и авторизацией"
     }, {
         "name": "Test protect",
-        "description": "Тестовый роутер для проверки"
+        "description": "Тестовый роутер для проверки защищенного обращения"
     }, {
         "name": "Bucket",
-        "description": bucket_description
+        "description": "Группа роутеров по работе с корзиной"
+    },{
+        "name": "Products",
+        "description": description_products
     }
 ]

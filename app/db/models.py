@@ -1,5 +1,5 @@
 import uuid
-from datetime import datetime, date
+from datetime import datetime, date, timezone
 from typing import Text, List
 
 from fastapi_users_db_sqlalchemy import SQLAlchemyBaseUserTableUUID
@@ -36,17 +36,16 @@ class User(SQLAlchemyBaseUserTableUUID, Base):
     registered_at: Mapped[datetime] = mapped_column(
         DateTime,
         nullable=False,
-        # default=datetime.utcnow,
         server_default=func.now()
-    )  # server_default=func.now()
+    )
     role_id: Mapped[int] = mapped_column(ForeignKey('roles.id'))
     hashed_password: Mapped[str]
 
     first_name: Mapped[str]
     last_name: Mapped[str]
-    birth_date: Mapped[date]  # = mapped_column(DateTime(timezone=False), nullable=False)
+    birth_date: Mapped[date]
     sex: Mapped[SexEnum]
-    contacts: Mapped[dict | None] = mapped_column(JSON)
+    contacts: Mapped[List[dict] | None] = mapped_column(JSON)
 
     is_active: Mapped[bool]
     is_superuser: Mapped[bool]
@@ -84,11 +83,12 @@ class Products(Base):
     """Таблица имеющихся товаров"""
     __tablename__ = "store_products"
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-    created_at: Mapped[datetime] = mapped_column(nullable=False, default=datetime.utcnow, server_default=func.now())
+    created_at: Mapped[datetime] = mapped_column(nullable=False, default=datetime.now(), server_default=func.now())
     updated_at: Mapped[datetime | None]
     name: Mapped[str] = mapped_column(nullable=False, unique=False)
     brand: Mapped[str] = mapped_column(nullable=True, unique=False)
     price: Mapped[int] = mapped_column(nullable=False, unique=False, default=0)
+    sum_count: Mapped[int] = mapped_column(nullable=False, default=0)
     counts: Mapped[dict | None] = mapped_column(JSON)
     parameters: Mapped[dict | None] = mapped_column(JSON)
     description: Mapped[Text]
@@ -107,6 +107,11 @@ class Products(Base):
         # cascade="all, delete-orphan"
     )
 
+    # def to_dict(self) -> dict:
+    #     """Универсальный метод для конвертации объекта SQLAlchemy в словарь"""
+    #     columns = class_mapper(self.__class__).columns
+    #     return {column.key: getattr(self, column.key) for column in columns}
+
 
 class StoreBucket(Base):
     """Корзина. Их не может быть много, поэтому хранит в каждой записи просто данные о товаре"""
@@ -114,7 +119,7 @@ class StoreBucket(Base):
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     user_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.id"), nullable=False)
     product_id: Mapped[int] = mapped_column(ForeignKey("store_products.id"), nullable=False)
-    added_at: Mapped[datetime] = mapped_column(nullable=False, default=datetime.utcnow, server_default=func.now())
+    added_at: Mapped[datetime] = mapped_column(nullable=False, default=datetime.now(timezone.utc), server_default=func.now())
 
     # Одна запись в корзине имеет одну запись о пользователе
     user: Mapped["User"] = relationship(
@@ -142,7 +147,7 @@ class StoreOrders(Base):
     __tablename__ = "store_orders"
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     user_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.id"), nullable=False)
-    order_date: Mapped[datetime] = mapped_column(nullable=False, default=datetime.utcnow, server_default=func.now())
+    order_date: Mapped[datetime] = mapped_column(nullable=False, default=datetime.now(timezone.utc), server_default=func.now())
     order_status: Mapped[OrderStatusEnum] = mapped_column(default=OrderStatusEnum.CREATED)
 
     # одна запись о заказе имеет одну запись о пользователе

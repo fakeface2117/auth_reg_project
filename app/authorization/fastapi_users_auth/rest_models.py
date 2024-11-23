@@ -1,13 +1,29 @@
-import enum
 from datetime import datetime, date
-from typing import Optional
+from typing import Optional, Any, List, Literal
 from uuid import UUID
 
 from fastapi_users import schemas
-from pydantic import EmailStr, field_validator, Field
+from pydantic import EmailStr, field_validator, Field, BaseModel
 
 from app.db.sql_enums import SexEnum, RoleEnum
 
+
+class UserContactsVK(BaseModel):
+    contact: Literal['VK']
+    value: Any
+    @field_validator('value')
+    def check_value(cls, value):
+        # валидация для ВК
+        return value
+
+
+class UserContactsPHONE(BaseModel):
+    contact: Literal['PHONE']
+    value: Any
+    @field_validator('value')
+    def check_value(cls, value):
+        # валидация для телефона
+        return value
 
 class UserRead(schemas.BaseUser[UUID]):
     # означает, что класс работает с базой
@@ -17,40 +33,20 @@ class UserRead(schemas.BaseUser[UUID]):
     id: UUID
     email: EmailStr
     registered_at: datetime
-    # role_id: int
     user_role: RoleEnum
     first_name: str
     last_name: str
     birth_date: date
     sex: SexEnum
-    contacts: Optional[dict]
+    contacts: Optional[List[UserContactsVK | UserContactsPHONE]]
 
     is_active: bool
     is_superuser: bool
     is_verified: bool
 
-    # id: UUID
-    # email: str
-    # username: str
-    # role_id: int
-    # is_active: bool = True
-    # is_superuser: bool = False
-    # is_verified: bool = False
-
-
-# class ContactsEnum(str, enum.Enum):
-#     VK = "vk"
-#     OK = "ok"
-#     PHONE = "phone"
-#     EMAIL = "email"
-#
-#
-# class UserContacts(Base):
-#     contact: ContactsEnum
-#     values: Any
-
 
 class UserCreate(schemas.BaseUserCreate):
+    # означает, что класс работает с базой
     class Config:
         from_attributes = True
 
@@ -61,7 +57,7 @@ class UserCreate(schemas.BaseUserCreate):
     birth_date: date
     sex: SexEnum = Field(..., description='Вариант "man" или "woman"')
 
-    # contacts: Optional[list[UserContacts]] # TODO сделать контакты
+    contacts: Optional[List[UserContactsVK | UserContactsPHONE]]
 
     @field_validator('birth_date')
     def check_birth_date(cls, value):
@@ -72,7 +68,6 @@ class UserCreate(schemas.BaseUserCreate):
         return value
 
 
-# TODO сделать схему и передать ее в параметры
 class UserUpdate(schemas.BaseUserUpdate):
     class Config:
         from_attributes = True
@@ -85,3 +80,4 @@ class UserUpdate(schemas.BaseUserUpdate):
 
     first_name: Optional[str] = None
     last_name: Optional[str] = None
+    contacts: Optional[List[UserContactsVK | UserContactsPHONE]] = None
