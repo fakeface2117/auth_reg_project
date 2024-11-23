@@ -43,7 +43,7 @@ class User(SQLAlchemyBaseUserTableUUID, Base):
 
     first_name: Mapped[str]
     last_name: Mapped[str]
-    birth_date: Mapped[date]  # = mapped_column(DateTime(timezone=False), nullable=False)
+    birth_date: Mapped[date]
     sex: Mapped[SexEnum]
     contacts: Mapped[List[dict] | None] = mapped_column(JSON)
 
@@ -88,6 +88,7 @@ class Products(Base):
     name: Mapped[str] = mapped_column(nullable=False, unique=False)
     brand: Mapped[str] = mapped_column(nullable=True, unique=False)
     price: Mapped[int] = mapped_column(nullable=False, unique=False, default=0)
+    sum_count: Mapped[int] = mapped_column(nullable=False, default=0)
     counts: Mapped[dict | None] = mapped_column(JSON)
     parameters: Mapped[dict | None] = mapped_column(JSON)
     description: Mapped[Text]
@@ -105,6 +106,11 @@ class Products(Base):
         back_populates="product",
         # cascade="all, delete-orphan"
     )
+
+    # def to_dict(self) -> dict:
+    #     """Универсальный метод для конвертации объекта SQLAlchemy в словарь"""
+    #     columns = class_mapper(self.__class__).columns
+    #     return {column.key: getattr(self, column.key) for column in columns}
 
 
 class StoreBucket(Base):

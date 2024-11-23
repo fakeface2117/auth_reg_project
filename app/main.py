@@ -21,7 +21,7 @@ async def lifespan(_app: FastAPI):
         logger.info(f'Swagger: http://{settings.SERVICE_HOST}:{settings.SERVICE_PORT}/api/store/openapi')
         yield
     finally:
-        logger.info("App stopp ...")
+        logger.info("App stop ...")
 
 
 app = FastAPI(
