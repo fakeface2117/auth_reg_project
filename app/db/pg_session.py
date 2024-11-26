@@ -1,3 +1,4 @@
+from functools import wraps
 from typing import AsyncGenerator, Annotated
 
 from sqlalchemy.ext.asyncio import AsyncSession, AsyncAttrs, create_async_engine, async_sessionmaker
@@ -39,6 +40,7 @@ async def get_async_session() -> AsyncGenerator[AsyncSession, None]:
 
 
 def db_connection(func):
+    @wraps(func)
     async def wrapper(*args, **kwargs):
         async with SessionLocal() as session:
             try:

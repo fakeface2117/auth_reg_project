@@ -4,7 +4,7 @@ from fastapi import APIRouter
 from fastapi.params import Depends
 
 from app.api.v1.products.rest_models import (AddProductRequest, NameBrandPrice, GetAllProductInfo, GetProductResponse,
-                                             ProductsFilters)
+                                             ProductsFilters, UpdatedProductData)
 from app.services.products_service import ProductsService, get_products_service
 from app.authorization.fastapi_users_auth.auth import current_user
 from app.db.models import User
@@ -35,8 +35,9 @@ async def add_products(
         products_service: ProductsService = Depends(get_products_service)
 ) -> List[Dict[str, int]]:
     """Добавление админом нескольких товаров одновременно"""
+    # exclude_unset гарантирует что в словарь попадут явно заданные поля
     new_product_id = await products_service.add_many_products(
-        products_data=[product_data.model_dump() for product_data in products_data])
+        products_data=[product_data.model_dump(exclude_unset=True) for product_data in products_data])
     return new_product_id
 
 
@@ -78,3 +79,17 @@ async def get_products_by_filter(
     """Получение информации о товарах по фильтрам (для всех пользователей)"""
     briefly_filtered_products = await products_service.get_by_filters(filter_data=filter_info)
     return briefly_filtered_products
+
+
+# TODO добавить админскую проверку
+@products_router.patch(path='/updateProductById', tags=[products_tags])
+async def update_by_id(
+        product_id: int,
+        updated_data: UpdatedProductData,
+        products_service: ProductsService = Depends(get_products_service)
+) -> GetAllProductInfo:
+    """Обновление товара по id товара (только админ)"""
+    updated_product = await products_service.update_product_by_id(
+        product_id=product_id, updated_data=updated_data.model_dump(exclude_none=True)
+    )
+    return updated_product
