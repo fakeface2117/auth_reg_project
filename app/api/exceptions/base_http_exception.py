@@ -11,6 +11,10 @@ class HTTPError(BaseModel):
 
 
 base_error_responses = {
+    401: {
+        "model": HTTPError,
+        "description": "Authorization error",
+    },
     404: {
         "model": HTTPError,
         "description": "Not found error",

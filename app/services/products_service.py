@@ -13,9 +13,7 @@ from app.db.pg_session import db_connection
 
 
 class ProductsService:
-    """
-    Сервис работы с товарами
-    """
+    """Сервис работы с товарами"""
 
     @db_connection
     async def add_product(self, session: AsyncSession, product_data: Dict) -> int:
@@ -129,6 +127,19 @@ class ProductsService:
         if not record:
             raise HTTPException(status_code=404, detail=f'Товара с id={product_id} не существует')
         return GetAllProductInfo.model_validate(record)
+
+    @db_connection
+    async def delete_product_by_id(self, session: AsyncSession, product_id: int) -> str:
+        """Удаление товара по его id"""
+        try:
+            product = await session.get(Products, product_id)
+            if product:
+                await session.delete(product)
+                await session.commit()
+                return f"Товар с id={product_id} успешно удален"
+            raise HTTPException(status_code=404, detail=f'Товара с id={product_id} не существует')
+        except SQLAlchemyError as e:
+            raise e
 
 
 def get_products_service() -> ProductsService:

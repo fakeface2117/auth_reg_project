@@ -95,3 +95,15 @@ async def update_by_id(
         product_id=product_id, updated_data=updated_data.model_dump(exclude_none=True)
     )
     return updated_product
+
+
+@products_router.delete(path='/deleteProductById', tags=[products_tags])
+@admin_verified
+async def delete_by_id(
+        product_id: int,
+        user: User = Depends(current_user),
+        products_service: ProductsService = Depends(get_products_service)
+) -> str:
+    """Удаление товара по id товара (только админ)"""
+    result = await products_service.delete_product_by_id(product_id=product_id)
+    return result
