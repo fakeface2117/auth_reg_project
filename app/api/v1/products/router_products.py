@@ -3,6 +3,7 @@ from typing import List, Dict
 from fastapi import APIRouter
 from fastapi.params import Depends
 
+from app.api.exceptions.base_http_exception import base_error_responses
 from app.api.v1.products.rest_models import (AddProductRequest, NameBrandPrice, GetAllProductInfo, GetProductResponse,
                                              ProductsFilters, UpdatedProductData)
 from app.services.products_service import ProductsService, get_products_service
@@ -10,7 +11,7 @@ from app.authorization.fastapi_users_auth.auth import current_user
 from app.db.models import User
 from app.decorators.admin_decorator import admin_verified
 
-products_router = APIRouter()
+products_router = APIRouter(responses=base_error_responses)
 
 products_tags: str = "Products"
 
