@@ -81,11 +81,12 @@ async def get_products_by_filter(
     return briefly_filtered_products
 
 
-# TODO добавить админскую проверку
 @products_router.patch(path='/updateProductById', tags=[products_tags])
+@admin_verified
 async def update_by_id(
         product_id: int,
         updated_data: UpdatedProductData,
+        user: User = Depends(current_user),
         products_service: ProductsService = Depends(get_products_service)
 ) -> GetAllProductInfo:
     """Обновление товара по id товара (только админ)"""
