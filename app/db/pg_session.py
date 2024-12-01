@@ -1,6 +1,7 @@
 from functools import wraps
 from typing import AsyncGenerator, Annotated
 
+from sqlalchemy import NullPool
 from sqlalchemy.ext.asyncio import AsyncSession, AsyncAttrs, create_async_engine, async_sessionmaker
 from sqlalchemy.orm import DeclarativeBase, mapped_column
 
@@ -18,12 +19,14 @@ class Base(AsyncAttrs, DeclarativeBase):
     # def __tablename__(cls) -> str:
     #     return f"{cls.__name__.lower()}s"
 
+if settings.MODE == "TEST":
+    DATABASE_URL = settings.DB_CONNECTION_STRING_TEST
+    DATABASE_PARAMS = {"poolclass": NullPool}
+else:
+    DATABASE_URL = settings.DB_CONNECTION_STRING
+    DATABASE_PARAMS = {'future': True, 'echo': False}
 
-pg_engine = create_async_engine(
-    url=settings.DB_CONNECTION_STRING,
-    future=True,
-    echo=False
-)
+pg_engine = create_async_engine(DATABASE_URL, **DATABASE_PARAMS)
 
 SessionLocal = async_sessionmaker(
     bind=pg_engine,
