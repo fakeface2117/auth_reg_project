@@ -25,7 +25,6 @@ class Settings(BaseSettings):
     MY_SMTP_SERVER: str = 'smtp.mail.ru'
 
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
-    SECRET_KEY: str = "something_secret_key"
     ALGORITHM_HASH: str = "HS256"
     COOKIE_NAME: str = "access_token"
 

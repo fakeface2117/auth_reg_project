@@ -16,7 +16,7 @@ products_router = APIRouter(responses=base_error_responses)
 products_tags: str = "Products"
 
 
-@products_router.post(path='/addProduct', tags=[products_tags])
+@products_router.post(path='/addProduct', tags=[products_tags], summary="Добавление админом одного товара")
 @admin_verified  # проверка админа
 async def add_new_product(
         product_data: AddProductRequest,
