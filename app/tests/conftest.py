@@ -63,7 +63,7 @@ async def auth_async_client():
             },
             headers={"content-type": 'application/x-www-form-urlencoded'}
         )
-        # assert ac.cookies["access_token"]
+        assert ac.cookies["access_token"]
         yield ac
 
 
