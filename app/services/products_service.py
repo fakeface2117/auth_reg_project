@@ -3,7 +3,7 @@ from datetime import datetime
 from fastapi import HTTPException
 from typing import List, Dict, Any
 
-from sqlalchemy import select, update
+from sqlalchemy import select, update, delete
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -139,6 +139,19 @@ class ProductsService:
                 return f"Товар с id={product_id} успешно удален"
             raise HTTPException(status_code=404, detail=f'Товара с id={product_id} не существует')
         except SQLAlchemyError as e:
+            await session.rollback()
+            raise e
+
+    @db_connection
+    async def delete_all(self, session: AsyncSession) -> str:
+        """Удаление всех товаров. Метод только для тестирования"""
+        try:
+            query = delete(Products)
+            await session.execute(query)
+            await session.commit()
+            return "Все товары удалены"
+        except SQLAlchemyError as e:
+            await session.rollback()
             raise e
 
 

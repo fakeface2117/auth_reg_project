@@ -4,6 +4,7 @@ from typing import Literal
 from pydantic_settings import BaseSettings
 from dotenv import load_dotenv
 
+
 # загрузка конфигов из .env
 load_dotenv(dotenv_path=os.path.join(os.path.dirname(os.path.abspath(__file__)), '../../.env'))
 
@@ -15,6 +16,7 @@ class Settings(BaseSettings):
     SERVICE_PORT: int = 8099
 
     DRIVER: str = "postgresql+asyncpg"
+
     DB_HOST: str = os.getenv('DB_HOST')
     DB_PORT: int = os.getenv('DB_PORT')
     DB_USER: str = os.getenv('DB_USER')
@@ -44,6 +46,5 @@ class Settings(BaseSettings):
     MY_EMAIL_ADDRESS: str = os.getenv('MY_EMAIL_ADDRESS')
     MY_EMAIL_PASSWORD: str = os.getenv('MY_EMAIL_PASSWORD')
     MY_SMTP_SERVER: str = 'smtp.mail.ru'
-
 
 settings = Settings()

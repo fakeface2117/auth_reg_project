@@ -82,7 +82,7 @@ class User(SQLAlchemyBaseUserTableUUID, Base):
 class Products(Base):
     """Таблица имеющихся товаров"""
     __tablename__ = "store_products"
-    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True, unique=True)
     created_at: Mapped[datetime] = mapped_column(nullable=False, default=datetime.now(), server_default=func.now())
     updated_at: Mapped[datetime | None]
     name: Mapped[str] = mapped_column(nullable=False, unique=False)

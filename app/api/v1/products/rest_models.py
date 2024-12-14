@@ -14,6 +14,19 @@ class BaseMappedModel(BaseModel):
     )
 
 
+class BaseLowerCaseModel(BaseModel):
+    @model_validator(mode='before')
+    @classmethod
+    def lower_name_brand(cls, data: Any):
+        """Приведение к нижнему регистру полей name и brand"""
+        if isinstance(data, dict):
+            if data.get('name', None):
+                data['name'] = data['name'].lower()
+            if data.get('brand', None):
+                data['brand'] = data['brand'].lower()
+            return data
+
+
 class ProductParameters(BaseModel):
     color: Literal['red', 'blue', 'white']
     style: Literal['sport', 'daily', 'home', 'office']
@@ -25,7 +38,7 @@ class SizesCountsModel(BaseModel):
     count: int = Field(ge=0)
 
 
-class AddProductRequest(BaseModel):
+class AddProductRequest(BaseLowerCaseModel):
     name: str = Field(max_length=50)
     brand: str = Field(max_length=50)
     price: int = Field(gt=0, le=1000000000)
@@ -39,11 +52,12 @@ class AddProductRequest(BaseModel):
     def validate_sums(cls, data: Any):
         """Проверка соответствия общего количества товара и количества по размерам товаров"""
         if isinstance(data, dict):
-            sum_count = data.get('sum_count')
-            counts = data.get('counts')
-            sizes_data = sum(one_size.get('count') for one_size in counts)
+            sum_count = data.get('sum_count', 0)
+            counts = data.get('counts', [])
+            sizes_data = sum(one_size.get('count', 0) for one_size in counts)
             if sum_count != sizes_data:
                 raise ValueError(f"Несоответствие данных по размерам ({sizes_data}) и общему количеству ({sum_count})")
+            data['sum_count'] = sum_count
             return data
 
     @field_validator('counts')
@@ -77,6 +91,7 @@ class NameBrandPrice(BaseMappedModel):
 
 
 class GetProductResponse(BaseMappedModel):
+    id: int
     name: str = Field(max_length=50)
     brand: str = Field(max_length=50)
     price: int = Field(gt=0)
@@ -85,14 +100,14 @@ class GetProductResponse(BaseMappedModel):
     parameters: Optional[ProductParameters] = None
 
 
-class ProductsFilters(BaseModel):
+class ProductsFilters(BaseLowerCaseModel):
     name: Optional[str] = Field(max_length=50, default=None)
     brand: Optional[str] = Field(max_length=50, default=None)
     price_min: int = Field(gt=0, default=1)
     price_max: int = Field(le=1000000000, default=1000000000)
 
 
-class UpdatedProductData(BaseModel):
+class UpdatedProductData(BaseLowerCaseModel):
     name: str | None = Field(max_length=50, default=None)
     brand: str | None = Field(max_length=50, default=None)
     price: int | None = Field(gt=0, le=1000000000, default=None)
