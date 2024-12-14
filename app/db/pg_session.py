@@ -20,8 +20,8 @@ class Base(AsyncAttrs, DeclarativeBase):
     #     return f"{cls.__name__.lower()}s"
 
 if settings.MODE == "TEST":
-    DATABASE_URL = settings.DB_CONNECTION_STRING_TEST
     DATABASE_PARAMS = {"poolclass": NullPool}
+    DATABASE_URL = settings.DB_CONNECTION_STRING_TEST
 else:
     DATABASE_URL = settings.DB_CONNECTION_STRING
     DATABASE_PARAMS = {'future': True, 'echo': False}
