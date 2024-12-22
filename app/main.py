@@ -70,8 +70,8 @@ def protect_route(user: User = Depends(current_user)):
     return f"Hello {user.email}"
 
 
-app.include_router(products_router, prefix='/api/store/v1/products')
-app.include_router(bucket_router, prefix='/api/store/v1/buckets')
+app.include_router(products_router, prefix='/api/store/v1/products', tags=['Products'])
+app.include_router(bucket_router, prefix='/api/store/v1/buckets', tags=['Bucket'])
 
 
 if __name__ == "__main__":
