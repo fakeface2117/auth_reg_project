@@ -1,37 +1,28 @@
-from typing import List
 from uuid import UUID
 
 from fastapi import HTTPException
 from sqlalchemy import select, delete
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.sql.functions import count
 
-from app.api.v1.store_bucket.rest_models import GetBucketResponse, AddBucketRequest
+from app.api.v1.store_bucket.rest_models import GetBucketResponse, AddBucketRequest, GetBucketAll
 from app.db.models import StoreBucket, Products
 from app.db.pg_session import db_connection
+from app.services.check_service import CheckService
 
 
-class BucketService:
+class BucketService(CheckService):
     """Сервис работы с корзиной"""
 
     @db_connection
     async def add_product_to_bucket(self, session: AsyncSession, user_id: UUID, product_info: AddBucketRequest) -> str:
         """Добавить товар в корзину"""
 
-        exists_criteria = select(Products.id, Products.counts).filter_by(id=product_info.product_id)
-        try:
-            check = await session.execute(exists_criteria)
-        except SQLAlchemyError as e:
-            raise e
-        product_data = check.fetchone()
-        if not product_data:
-            raise HTTPException(status_code=404, detail="Товара не существует")
-        count_of_size = list(filter(lambda x: x['size'] == product_info.product_size, product_data.counts))
-        if not count_of_size:
-            raise HTTPException(status_code=404, detail=f"Размера {product_info.product_size} нет в наличии")
-        if count_of_size[0]['count'] < product_info.product_count:
-            raise HTTPException(status_code=404, detail=f"В наличии {count_of_size} шт.")
+        await self.check_product(
+            product_id=product_info.product_id,
+            product_size=product_info.product_size,
+            product_count=product_info.product_count
+        )
 
         new_item = StoreBucket(
             user_id=user_id,
@@ -48,7 +39,7 @@ class BucketService:
         return "Товар добавлен в корзину!"
 
     @db_connection
-    async def get_bucket(self, session: AsyncSession, user_id: UUID) -> List[GetBucketResponse]:
+    async def get_bucket(self, session: AsyncSession, user_id: UUID) -> GetBucketAll:
         """Просмотр всей корзины"""
         query = select(
             StoreBucket.id,
@@ -61,7 +52,7 @@ class BucketService:
             Products.brand,
             Products.price
         )
-        query = query.join(Products, Products.id == StoreBucket.product_id).where(StoreBucket.user_id == user_id)
+        query = query.join(Products, Products.id == StoreBucket.product_id)
         query = query.where(StoreBucket.user_id == user_id).order_by(StoreBucket.added_at)
         try:
             result = await session.execute(query)
@@ -70,7 +61,11 @@ class BucketService:
         records = result.all()
         if not records:
             raise HTTPException(status_code=404, detail="Ваша корзина пуста")
-        return [GetBucketResponse.model_validate(record) for record in records]
+        total_price = sum(record.price * record.product_count for record in records)
+        return GetBucketAll(
+            total_price=total_price,
+            products=[GetBucketResponse.model_validate(record) for record in records]
+        )
 
     @db_connection
     async def delete_product_from_bucket(
@@ -90,6 +85,7 @@ class BucketService:
             )
             await session.commit()
         except SQLAlchemyError as e:
+            await session.rollback()
             raise e
         return "Товар удален из корзины"
 

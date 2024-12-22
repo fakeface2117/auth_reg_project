@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Optional, Literal
+from typing import Optional, Literal, List
 from uuid import UUID
 
 from pydantic import BaseModel, Field, ConfigDict
@@ -26,3 +26,7 @@ class GetBucketResponse(BaseModel):
     name: str
     brand: str
     price: int
+
+class GetBucketAll(BaseModel):
+    total_price: int = Field(gt=0)
+    products: List[GetBucketResponse]

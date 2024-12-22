@@ -1,9 +1,9 @@
-from typing import List, Literal
+from typing import Literal
 
 from fastapi import APIRouter, Depends
 
 from app.api.exceptions.base_http_exception import base_error_responses
-from app.api.v1.store_bucket.rest_models import AddBucketRequest, GetBucketResponse
+from app.api.v1.store_bucket.rest_models import AddBucketRequest, GetBucketAll
 from app.authorization.fastapi_users_auth.auth import current_user
 from app.db.models import User
 from app.services.bucket_service import BucketService, get_bucket_service
@@ -26,7 +26,7 @@ async def post_user_bucket(
 async def get_user_bucket(
         user: User = Depends(current_user),
         bucket_service: BucketService = Depends(get_bucket_service)
-) -> List[GetBucketResponse]:
+) -> GetBucketAll:
     """Просмотр корзины"""
     bucket = await bucket_service.get_bucket(user_id=user.id)
     return bucket

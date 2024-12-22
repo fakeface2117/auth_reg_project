@@ -1,9 +1,9 @@
 import uuid
-from datetime import datetime, date, timezone
+from datetime import datetime, date
 from typing import Text, List
 
 from fastapi_users_db_sqlalchemy import SQLAlchemyBaseUserTableUUID
-from sqlalchemy import ForeignKey, text, types, func, JSON, DateTime, ARRAY, String
+from sqlalchemy import ForeignKey, text, types, func, JSON, DateTime
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.pg_session import Base, uniq_str_notnull
@@ -98,13 +98,13 @@ class Products(Base):
     bucket_store: Mapped[list["StoreBucket"]] = relationship(
         "StoreBucket",
         back_populates="product",
-        # cascade="all, delete-orphan"
+        cascade="all, delete-orphan"
     )
     # одному товару соответствует много записей в заказах
     order_product: Mapped[list["StoreOrderProducts"]] = relationship(
         "StoreOrderProducts",
         back_populates="product",
-        # cascade="all, delete-orphan"
+        cascade="all, delete-orphan"
     )
 
     # def to_dict(self) -> dict:
@@ -149,8 +149,9 @@ class StoreOrders(Base):
     __tablename__ = "store_orders"
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     user_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.id"), nullable=False)
-    order_date: Mapped[datetime] = mapped_column(nullable=False, default=datetime.now(timezone.utc), server_default=func.now())
+    order_date: Mapped[datetime] = mapped_column(nullable=False, default=datetime.now(), server_default=func.now())
     order_status: Mapped[OrderStatusEnum] = mapped_column(default=OrderStatusEnum.CREATED)
+    total_price: Mapped[int] = mapped_column(nullable=False)
 
     # одна запись о заказе имеет одну запись о пользователе
     user: Mapped["User"] = relationship(
@@ -173,7 +174,7 @@ class StoreOrderProducts(Base):
     order_id: Mapped[int] = mapped_column(ForeignKey("store_orders.id"), nullable=False)
     product_id: Mapped[int] = mapped_column(ForeignKey("store_products.id"), nullable=False)
     product_count: Mapped[int] = mapped_column(nullable=False)
-    product_size: Mapped[int] = mapped_column(nullable=False)
+    product_size: Mapped[str] = mapped_column(nullable=False)
 
     # одна запись в таблице заказов связана с одним заказом
     order: Mapped["StoreOrders"] = relationship(
