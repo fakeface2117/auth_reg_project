@@ -16,7 +16,7 @@ products_router = APIRouter(responses=base_error_responses)
 products_tags: str = "Products"
 
 
-@products_router.post(path='/addProduct', tags=[products_tags], summary="Добавление админом одного товара")
+@products_router.post(path='/addProduct', summary="Добавление админом одного товара")
 @admin_verified  # проверка админа
 async def add_new_product(
         product_data: AddProductRequest,
@@ -28,7 +28,7 @@ async def add_new_product(
     return new_product_id
 
 
-@products_router.post(path='/addManyProducts', tags=[products_tags])
+@products_router.post(path='/addManyProducts')
 @admin_verified
 async def add_products(
         products_data: List[AddProductRequest],
@@ -42,7 +42,7 @@ async def add_products(
     return new_product_id
 
 
-@products_router.get(path='/getAllProducts', tags=[products_tags])
+@products_router.get(path='/getAllProducts')
 @admin_verified
 async def get_all(
         user: User = Depends(current_user),
@@ -53,7 +53,7 @@ async def get_all(
     return all_products
 
 
-@products_router.get(path='/getAllBrieflyProducts', tags=[products_tags])
+@products_router.get(path='/getAllBrieflyProducts')
 async def get_all_briefly(
         products_service: ProductsService = Depends(get_products_service)
 ) -> List[NameBrandPrice]:
@@ -62,7 +62,7 @@ async def get_all_briefly(
     return briefly_all_products
 
 
-@products_router.get(path='/getProductInfo', tags=[products_tags])
+@products_router.get(path='/getProductInfo')
 async def get_product_info(
         product_id: int,
         products_service: ProductsService = Depends(get_products_service)
@@ -72,7 +72,7 @@ async def get_product_info(
     return product_info
 
 
-@products_router.post(path='/getProductsByFilter', tags=[products_tags])
+@products_router.post(path='/getProductsByFilter')
 async def get_products_by_filter(
         filter_info: ProductsFilters,
         products_service: ProductsService = Depends(get_products_service)
@@ -82,7 +82,7 @@ async def get_products_by_filter(
     return briefly_filtered_products
 
 
-@products_router.patch(path='/updateProductById', tags=[products_tags])
+@products_router.patch(path='/updateProductById')
 @admin_verified
 async def update_by_id(
         product_id: int,
@@ -97,7 +97,7 @@ async def update_by_id(
     return updated_product
 
 
-@products_router.delete(path='/deleteProductById', tags=[products_tags])
+@products_router.delete(path='/deleteProductById')
 @admin_verified
 async def delete_by_id(
         product_id: int,
