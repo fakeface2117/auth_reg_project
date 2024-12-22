@@ -15,5 +15,8 @@ tags_metadata = [
     },{
         "name": "Products",
         "description": description_products
+    },{
+        "name": "Orders",
+        "description": "Группа роутеров по работе с заказами"
     }
 ]
