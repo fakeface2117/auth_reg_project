@@ -7,7 +7,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.sql.functions import count
 
-from app.api.v1.store_bucket.rest_models import GetBucketResponse, AddBucketRequest
+from app.api.v1.store_bucket.rest_models import GetBucketResponse, AddBucketRequest, GetBucketAll
 from app.db.models import StoreBucket, Products
 from app.db.pg_session import db_connection
 
@@ -48,7 +48,7 @@ class BucketService:
         return "Товар добавлен в корзину!"
 
     @db_connection
-    async def get_bucket(self, session: AsyncSession, user_id: UUID) -> List[GetBucketResponse]:
+    async def get_bucket(self, session: AsyncSession, user_id: UUID) -> GetBucketAll:
         """Просмотр всей корзины"""
         query = select(
             StoreBucket.id,
@@ -70,7 +70,11 @@ class BucketService:
         records = result.all()
         if not records:
             raise HTTPException(status_code=404, detail="Ваша корзина пуста")
-        return [GetBucketResponse.model_validate(record) for record in records]
+        total_price = sum(record.price for record in records)
+        return GetBucketAll(
+            total_price=total_price,
+            products=[GetBucketResponse.model_validate(record) for record in records]
+        )
 
     @db_connection
     async def delete_product_from_bucket(
