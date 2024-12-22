@@ -10,12 +10,13 @@ class SexEnum(str, enum.Enum):
 class RoleEnum(str, enum.Enum):
     """В БД 'USER', на бэке 'user' """
     USER = "user"
-    SELLER = "seller" # не ружен
+    SELLER = "seller"  # не нужен
     ADMIN = "admin"
 
 
 class OrderStatusEnum(str, enum.Enum):
     CREATED = "создан"
+    IS_PAID = "оплачен"
     IS_GOING_TO = "собирается"
     IN_DELIVERY = "в доставке"
     DELIVERED = "доставлен"

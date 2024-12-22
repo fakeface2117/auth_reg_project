@@ -1,9 +1,9 @@
-from typing import List, Literal
+from typing import Literal
 
 from fastapi import APIRouter, Depends
 
 from app.api.exceptions.base_http_exception import base_error_responses
-from app.api.v1.store_bucket.rest_models import AddBucketRequest, GetBucketResponse, GetBucketAll
+from app.api.v1.store_bucket.rest_models import AddBucketRequest, GetBucketAll
 from app.authorization.fastapi_users_auth.auth import current_user
 from app.db.models import User
 from app.services.bucket_service import BucketService, get_bucket_service
