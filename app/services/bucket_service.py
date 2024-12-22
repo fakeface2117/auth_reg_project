@@ -70,7 +70,7 @@ class BucketService:
         records = result.all()
         if not records:
             raise HTTPException(status_code=404, detail="Ваша корзина пуста")
-        total_price = sum(record.price for record in records)
+        total_price = sum(record.price * record.product_count for record in records)
         return GetBucketAll(
             total_price=total_price,
             products=[GetBucketResponse.model_validate(record) for record in records]
