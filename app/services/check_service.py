@@ -1,10 +1,13 @@
+from uuid import UUID
+
 from fastapi import HTTPException
 from sqlalchemy import select
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.db.models import Products
+from app.db.models import Products, StoreOrders
 from app.db.pg_session import db_connection
+from app.db.sql_enums import OrderStatusEnum
 
 
 class CheckService:
@@ -46,3 +49,19 @@ class CheckService:
                 "sum_count": product_data.sum_count,
                 "counts": product_data.counts
             }, product_data.price * product_count
+
+    @db_connection
+    async def check_order(self, session: AsyncSession, order_id: int, user_id: UUID):
+        check_query = select(StoreOrders).filter(
+            StoreOrders.id == order_id,
+            StoreOrders.user_id == user_id,
+            StoreOrders.order_status == OrderStatusEnum.CREATED
+        )
+        try:
+            check = await session.execute(check_query)
+        except SQLAlchemyError as e:
+            raise e
+        order_data = check.scalar_one_or_none()
+        if not order_data:
+            raise HTTPException(status_code=404, detail='Заказа не существует')
+        return {'order_id': order_data.id, 'total_price': order_data.total_price}

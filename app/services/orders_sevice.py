@@ -5,7 +5,7 @@ from sqlalchemy import select, update, delete
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.api.v1.orders.rest_models import CreateOrderResponse
+from app.api.v1.orders.rest_models import OrderResponse, OneOrderResponse, UpdatedOrderResponse, FilteredOrderResponse
 from app.db.models import StoreBucket, Products, StoreOrders, StoreOrderProducts
 from app.db.pg_session import db_connection
 from app.db.sql_enums import OrderStatusEnum
@@ -17,7 +17,7 @@ class OrderService(CheckService):
 
     # TODO вынужденный ГОВНОКОД. Лучше завести отдельную таблицу для размеров
     @staticmethod
-    def __unique_items(checked_items: list, items_in_bucket):
+    def __unique_items(checked_items: list, items_in_bucket) -> list:
         """Функция для изменения данных размеров товаров.
         Если пользователь что-то купил, значит в таблице товаров надо вычесть"""
         unique_data = []
@@ -41,7 +41,7 @@ class OrderService(CheckService):
         return unique_data
 
     @db_connection
-    async def add_order(self, session: AsyncSession, user_id: UUID):
+    async def add_order(self, session: AsyncSession, user_id: UUID) -> OrderResponse:
         """Создание заказа"""
 
         # получение данных корзины по user_id
@@ -106,13 +106,90 @@ class OrderService(CheckService):
             await session.execute(clear_user_bucket)
             await session.commit()
 
-            return CreateOrderResponse.model_validate(order_object)
+            return OrderResponse.model_validate(order_object)
         except SQLAlchemyError as e:
             await session.rollback()
             raise e
         except Exception as ex:
             await session.rollback()
             raise ex
+
+    @db_connection
+    async def get_user_orders(self, session: AsyncSession, user_id: UUID) -> list[OrderResponse]:
+        """Получение всех заказов пользователя"""
+        query = select(
+            StoreOrders.id,
+            StoreOrders.order_date,
+            StoreOrders.order_status,
+            StoreOrders.total_price
+        ).where(StoreOrders.user_id == user_id)
+        try:
+            result = await session.execute(query)
+        except SQLAlchemyError as e:
+            raise e
+
+        records = result.all()
+        if not records:
+            raise HTTPException(status_code=404, detail="Нет данных о заказах")
+        return [OrderResponse.model_validate(record) for record in records]
+
+    @db_connection
+    async def get_user_order(self, session: AsyncSession, user_id: UUID, order_id: int) -> list[OneOrderResponse]:
+        """Получение одного заказа пользователя"""
+
+        query = select(
+            StoreOrderProducts.id,
+            StoreOrderProducts.order_id,
+            StoreOrderProducts.product_id,
+            StoreOrderProducts.product_count,
+            StoreOrderProducts.product_size,
+            Products.name,
+            Products.brand,
+            Products.price
+        )
+        query = query.join(Products, Products.id == StoreOrderProducts.product_id)
+        query = query.join(StoreOrders, StoreOrders.id == StoreOrderProducts.order_id)
+        query = query.where(StoreOrderProducts.order_id == order_id)
+        query = query.where(StoreOrders.user_id == user_id)
+
+        try:
+            result = await session.execute(query)
+        except SQLAlchemyError as e:
+            raise e
+
+        records = result.all()
+        if not records:
+            raise HTTPException(status_code=404, detail="Нет данных о заказе")
+        return [OneOrderResponse.model_validate(record) for record in records]
+
+    @db_connection
+    async def get_filtered_order(self, session: AsyncSession, order_status: str) -> list[FilteredOrderResponse]:
+        """Получение админом заказов по статусу"""
+        query = select(StoreOrders).where(StoreOrders.order_status == order_status)
+        try:
+            result = await session.execute(query)
+        except SQLAlchemyError as e:
+            raise e
+        records = result.scalars().all()
+        if not records:
+            raise HTTPException(status_code=404, detail="Нет данных о заказах с таким статусом")
+        return [FilteredOrderResponse.model_validate(record) for record in records]
+
+    @db_connection
+    async def update_status(self, session: AsyncSession, order_id: int, new_status: str) -> UpdatedOrderResponse:
+        """Обновление статуса заказа админом"""
+
+        query = update(StoreOrders).filter_by(id=order_id).values(order_status=new_status).returning(StoreOrders)
+        try:
+            result = await session.execute(query)
+            await session.commit()
+        except SQLAlchemyError as e:
+            await session.rollback()
+            raise e
+        record = result.scalar_one_or_none()
+        if not record:
+            raise HTTPException(status_code=404, detail=f'Заказа с id={order_id} не существует')
+        return UpdatedOrderResponse.model_validate(record)
 
 
 def get_order_service() -> OrderService:

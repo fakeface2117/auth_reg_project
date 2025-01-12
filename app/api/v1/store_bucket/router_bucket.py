@@ -11,7 +11,7 @@ from app.services.bucket_service import BucketService, get_bucket_service
 bucket_router = APIRouter(responses=base_error_responses)
 
 
-@bucket_router.post("/postBucketOfUser")
+@bucket_router.post("/add")
 async def post_user_bucket(
         product: AddBucketRequest,
         user: User = Depends(current_user),
@@ -22,7 +22,7 @@ async def post_user_bucket(
     return result
 
 
-@bucket_router.get("/getBucketOfUser")
+@bucket_router.get("/user-bucket")
 async def get_user_bucket(
         user: User = Depends(current_user),
         bucket_service: BucketService = Depends(get_bucket_service)
@@ -32,8 +32,10 @@ async def get_user_bucket(
     return bucket
 
 
-@bucket_router.delete("/deleteBucketOfUser",
-                      description="Всегда удаляет все записи по заданным критериям, даже если записи нет. Сделано для избежания лишних проверок")
+@bucket_router.delete(
+    "/del-item",
+    description="Всегда удаляет все записи по заданным критериям, даже если записи нет. Сделано для избежания лишних проверок"
+)
 async def delete_item(
         product_id: int,
         product_size: Literal['XS', 'S', 'M', 'L', 'XL', 'XXL'],

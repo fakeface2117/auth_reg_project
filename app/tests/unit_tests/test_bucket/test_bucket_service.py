@@ -10,7 +10,7 @@ class TestBucketService:
     async def test_post_user_bucket(self, product_id, product_count, product_size, status_code, auth_async_client: AsyncClient):
         cookies = {'access_token': auth_async_client.cookies['access_token']}
         response = await auth_async_client.post(
-            url="/api/store/v1/buckets/postBucketOfUser",
+            url="/api/store/v1/buckets/add",
             json={
                 "product_id": product_id,
                 "product_count": product_count,
@@ -23,7 +23,7 @@ class TestBucketService:
     async def test_get_bucket(self, auth_async_client: AsyncClient):
         cookies = {'access_token': auth_async_client.cookies['access_token']}
         response = await auth_async_client.get(
-            url="/api/store/v1/buckets/getBucketOfUser",
+            url="/api/store/v1/buckets/user-bucket",
             cookies=cookies
         )
         assert response.status_code == 200
@@ -35,7 +35,7 @@ class TestBucketService:
     async def test_delete_item(self, product_size, status_code, auth_async_client: AsyncClient):
         cookies = {'access_token': auth_async_client.cookies['access_token']}
         response = await auth_async_client.delete(
-            url="/api/store/v1/buckets/deleteBucketOfUser",
+            url="/api/store/v1/buckets/del-item",
             params={
                 "product_id": 1,
                 "product_size": product_size
