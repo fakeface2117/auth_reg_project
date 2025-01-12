@@ -5,7 +5,7 @@ from sqlalchemy import select, update, delete
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.api.v1.orders.rest_models import OrderResponse, OneOrderResponse, UpdatedOrderResponse
+from app.api.v1.orders.rest_models import OrderResponse, OneOrderResponse, UpdatedOrderResponse, FilteredOrderResponse
 from app.db.models import StoreBucket, Products, StoreOrders, StoreOrderProducts
 from app.db.pg_session import db_connection
 from app.db.sql_enums import OrderStatusEnum
@@ -161,6 +161,19 @@ class OrderService(CheckService):
         if not records:
             raise HTTPException(status_code=404, detail="Нет данных о заказе")
         return [OneOrderResponse.model_validate(record) for record in records]
+
+    @db_connection
+    async def get_filtered_order(self, session: AsyncSession, order_status: str) -> list[FilteredOrderResponse]:
+        """Получение админом заказов по статусу"""
+        query = select(StoreOrders).where(StoreOrders.order_status == order_status)
+        try:
+            result = await session.execute(query)
+        except SQLAlchemyError as e:
+            raise e
+        records = result.scalars().all()
+        if not records:
+            raise HTTPException(status_code=404, detail="Нет данных о заказах с таким статусом")
+        return [FilteredOrderResponse.model_validate(record) for record in records]
 
     @db_connection
     async def update_status(self, session: AsyncSession, order_id: int, new_status: str) -> UpdatedOrderResponse:

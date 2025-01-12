@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends
 
 from app.api.exceptions.base_http_exception import base_error_responses
-from app.api.v1.orders.rest_models import OrderResponse, OneOrderResponse, UpdatedOrderResponse
+from app.api.v1.orders.rest_models import OrderResponse, OneOrderResponse, UpdatedOrderResponse, FilteredOrderResponse
 from app.authorization.fastapi_users_auth.auth import current_user
 from app.db.models import User
 from app.db.sql_enums import OrderStatusEnum
@@ -39,6 +39,18 @@ async def get_order(
 ) -> list[OneOrderResponse]:
     """Получение информации о заказе"""
     result = await order_service.get_user_order(user_id=user.id, order_id=order_id)
+    return result
+
+
+@order_router.get("/filer-orders")
+@admin_verified
+async def get_orders_by_status_filter(
+        order_status: OrderStatusEnum,
+        user: User = Depends(current_user),
+        order_service: OrderService = Depends(get_order_service)
+) -> list[FilteredOrderResponse]:
+    """Получение списка заказов по статусам (только админ)"""
+    result = await order_service.get_filtered_order(order_status=order_status)
     return result
 
 

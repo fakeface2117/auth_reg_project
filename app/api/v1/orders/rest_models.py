@@ -41,3 +41,6 @@ class UpdatedOrderResponse(BaseModel):
     order_status: str
     total_price: int = Field(gt=0)
 
+class FilteredOrderResponse(UpdatedOrderResponse):
+    pass
+
