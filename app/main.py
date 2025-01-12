@@ -7,6 +7,7 @@ from loguru import logger
 
 from api.metadata.tags_metadata import tags_metadata
 from app.api.v1.orders.router_orders import order_router
+from app.api.v1.orders.router_payment import payment_router
 from app.api.v1.products.router_products import products_router
 from app.api.v1.store_bucket.router_bucket import bucket_router
 from app.authorization.fastapi_users_auth.auth import fastapi_users, auth_backend, current_user
@@ -74,6 +75,7 @@ def protect_route(user: User = Depends(current_user)):
 app.include_router(products_router, prefix='/api/store/v1/products', tags=['Products'])
 app.include_router(bucket_router, prefix='/api/store/v1/buckets', tags=['Bucket'])
 app.include_router(order_router, prefix='/api/store/v1/orders', tags=['Orders'])
+app.include_router(payment_router, prefix='/api/store/v1/payment', tags=['Payment'])
 
 if __name__ == "__main__":
     uvicorn.run(
