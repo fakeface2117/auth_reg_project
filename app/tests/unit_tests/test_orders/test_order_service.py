@@ -77,3 +77,23 @@ class TestOrderService:
             assert response_json['order_status'] == new_status
         if response.status_code == 404:
             assert response_json['detail'] == f"Заказа с id={order_id} не существует"
+
+    @pytest.mark.parametrize("order_status, status_code", [
+        ('собирается', 200),
+        ('доставлен', 404),
+        ('другой', 422)
+    ])
+    async def test_filter_orders_by_status(self, order_status, status_code, auth_async_client: AsyncClient):
+        cookies = {'access_token': auth_async_client.cookies['access_token']}
+        response = await auth_async_client.get(
+            url=f"/api/store/v1/orders/filer-orders",
+            cookies=cookies,
+            params={'order_status': order_status}
+        )
+        assert response.status_code == status_code
+        response_json = response.json()
+        if response.status_code == 200:
+            assert len(response_json) == 1
+            assert response_json[0]['order_status'] == order_status
+        if response.status_code == 404:
+            assert response_json['detail'] == "Нет данных о заказах с таким статусом"
