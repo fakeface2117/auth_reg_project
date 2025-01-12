@@ -9,7 +9,7 @@ from app.services.orders_sevice import get_order_service, OrderService
 order_router = APIRouter(responses=base_error_responses)
 
 
-@order_router.post("/createOrder")
+@order_router.post("/new")
 async def create_order(
         user: User = Depends(current_user),
         order_service: OrderService = Depends(get_order_service)
