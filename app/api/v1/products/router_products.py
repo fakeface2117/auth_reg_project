@@ -97,7 +97,7 @@ async def update_by_id(
     return updated_product
 
 
-@products_router.delete(path='/{deleteProductById}')
+@products_router.delete(path='/{product_id}')
 @admin_verified
 async def delete_by_id(
         product_id: int,
