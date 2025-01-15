@@ -1,8 +1,15 @@
 import logging.config
 
-STDOUT_FORMAT = '%(log_color)s[%(asctime)s] - %(name)s - [%(levelname)s] - %(message)s'
-FILE_FORMAT = '[%(asctime)s] - %(name)s - [%(levelname)s] - %(message)s'
-LOG_DEFAULT_HANDLERS = ['console', 'file']
+from app.core.config import settings
+
+if settings.MODE == 'DEV':
+    LOG_DEFAULT_HANDLERS = ['console']
+else:
+    LOG_DEFAULT_HANDLERS = ['file']
+
+STDOUT_FORMAT = '%(log_color)s[%(asctime)s] - [%(levelname)s] - %(filename)s:%(lineno)d - %(message)s'
+FILE_FORMAT = '[%(asctime)s] - [%(levelname)s] - %(filename)s:%(lineno)d - %(message)s'
+
 LOGGING_CONFIG = {
     'version': 1,
     'disable_existing_loggers': False,
@@ -34,7 +41,7 @@ LOGGING_CONFIG = {
             'formatter': 'file',
             'level': 'WARNING',
             'class': 'logging.FileHandler',
-            'filename': 'app_error.log',
+            'filename': 'app.log',
         },
         'access': {
             'formatter': 'verbose',
