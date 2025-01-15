@@ -38,6 +38,11 @@ class CheckService:
                 detail=f"Размера {product_size} нет в наличии для выбранного товара '{product_data.name} {product_data.brand}'"
             )
         if count_of_size[0]['count'] < product_count:
+            if count_of_size[0]['count'] == 0:
+                raise HTTPException(
+                    status_code=404,
+                    detail=f"Товар '{product_data.name} {product_data.brand}' закончился"
+                )
             raise HTTPException(
                 status_code=404,
                 detail=f"В наличии только {count_of_size[0]['count']} шт. для выбранного товара '{product_data.name} {product_data.brand}'"
