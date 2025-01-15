@@ -8,7 +8,6 @@ from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.v1.products.rest_models import NameBrandPrice, GetAllProductInfo, GetProductResponse, ProductsFilters
-from app.core.logger import logger
 from app.db.models import Products
 from app.db.pg_session import db_connection
 
@@ -66,7 +65,6 @@ class ProductsService:
         records = result.all()
         if not records:
             raise HTTPException(status_code=404, detail="Нет данных о товарах")
-        logger.info("Briefly products selected")
         return [NameBrandPrice.model_validate(record) for record in records]
 
     @db_connection
