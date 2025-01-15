@@ -3,7 +3,6 @@ from contextlib import asynccontextmanager
 import uvicorn
 from fastapi import FastAPI, Depends
 from fastapi.openapi.utils import get_openapi
-from loguru import logger
 
 from api.metadata.tags_metadata import tags_metadata
 from app.api.v1.orders.router_orders import order_router
@@ -14,12 +13,15 @@ from app.authorization.fastapi_users_auth.auth import fastapi_users, auth_backen
 from app.authorization.fastapi_users_auth.rest_models import UserRead, UserCreate, UserUpdate
 from app.core.app_description import description
 from app.core.config import settings
+from app.core.logger import logger, LOGGING_CONFIG
 from app.db.models import User
 
 
 @asynccontextmanager
 async def lifespan(_app: FastAPI):
     try:
+        if settings.MODE != 'DEV':
+            print('Start application')
         logger.info(f'Swagger: http://{settings.SERVICE_HOST}:{settings.SERVICE_PORT}/api/store/openapi')
         yield
     finally:
@@ -82,4 +84,5 @@ if __name__ == "__main__":
         "main:app",
         host=settings.SERVICE_HOST,
         port=settings.SERVICE_PORT,
+        log_config=LOGGING_CONFIG
     )
