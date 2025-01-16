@@ -6,6 +6,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.v1.store_bucket.rest_models import GetBucketResponse, AddBucketRequest, GetBucketAll
+from app.core.logger import logger
 from app.db.models import StoreBucket, Products
 from app.db.pg_session import db_connection
 from app.services.check_service import CheckService
@@ -34,6 +35,7 @@ class BucketService(CheckService):
         try:
             await session.commit()  # flush если промежуточная фиксация данных
         except SQLAlchemyError as e:
+            logger.error(f'Add product to bucket by user {user_id} error: {e}')
             await session.rollback()
             raise e
         return "Товар добавлен в корзину!"
@@ -57,6 +59,7 @@ class BucketService(CheckService):
         try:
             result = await session.execute(query)
         except SQLAlchemyError as e:
+            logger.error(f'Get user {user_id} bucket error: {e}')
             raise e
         records = result.all()
         if not records:
@@ -85,6 +88,7 @@ class BucketService(CheckService):
             )
             await session.commit()
         except SQLAlchemyError as e:
+            logger.error(f'Delete product from bucket by user {user_id} error: {e}')
             await session.rollback()
             raise e
         return "Товар удален из корзины"

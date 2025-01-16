@@ -4,6 +4,8 @@ from typing import Literal, Optional, List, Any
 
 from pydantic import BaseModel, Field, ConfigDict, model_validator, field_validator
 
+from app.core.logger import logger
+
 
 class BaseMappedModel(BaseModel):
     """Класс для реализации мапинга между моделями ORM и Pydantic"""
@@ -56,6 +58,7 @@ class AddProductRequest(BaseLowerCaseModel):
             counts = data.get('counts', [])
             sizes_data = sum(one_size.get('count', 0) for one_size in counts)
             if sum_count != sizes_data:
+                logger.warning('Validation warning: incorrect sizes and counts')
                 raise ValueError(f"Несоответствие данных по размерам ({sizes_data}) и общему количеству ({sum_count})")
             data['sum_count'] = sum_count
             return data
@@ -125,6 +128,7 @@ class UpdatedProductData(BaseLowerCaseModel):
             counts = data.get('counts')
             if sum_count:
                 if not counts:
+                    logger.warning('Validation warning: update count of product')
                     raise ValueError('При обновлении общего количества необходимо также обновить данные по размерам')
             if counts:
                 sizes_data = sum(one_size.get('count') for one_size in counts)
@@ -132,6 +136,7 @@ class UpdatedProductData(BaseLowerCaseModel):
                     sum_count = sizes_data
                     data['sum_count'] = sum_count
                 if sum_count != sizes_data:
+                    logger.warning('Validation error: incorrect sizes and counts')
                     raise ValueError(
                         f"Несоответствие данных по размерам ({sizes_data}) и общему количеству ({sum_count})")
             return data

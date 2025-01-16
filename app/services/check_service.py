@@ -5,6 +5,7 @@ from sqlalchemy import select
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.logger import logger
 from app.db.models import Products, StoreOrders
 from app.db.pg_session import db_connection
 from app.db.sql_enums import OrderStatusEnum
@@ -27,9 +28,11 @@ class CheckService:
         try:
             check = await session.execute(exists_criteria)
         except SQLAlchemyError as e:
+            logger.error(f"Check product error: {e}")
             raise e
         product_data = check.fetchone()
         if not product_data:
+            logger.warning(f"Product with id {product_id} not found")
             raise HTTPException(status_code=404, detail="Товара не существует")
         count_of_size = list(filter(lambda x: x['size'] == product_size, product_data.counts))
         if not count_of_size:
@@ -65,8 +68,10 @@ class CheckService:
         try:
             check = await session.execute(check_query)
         except SQLAlchemyError as e:
+            logger.error(f"Check order error: {e}")
             raise e
         order_data = check.scalar_one_or_none()
         if not order_data:
+            logger.warning(f"Order with id {order_id} not found for user {user_id}")
             raise HTTPException(status_code=404, detail='Заказа не существует')
         return {'order_id': order_data.id, 'total_price': order_data.total_price}

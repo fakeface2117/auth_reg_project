@@ -6,6 +6,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.v1.orders.rest_models import OrderResponse, OneOrderResponse, UpdatedOrderResponse, FilteredOrderResponse
+from app.core.logger import logger
 from app.db.models import StoreBucket, Products, StoreOrders, StoreOrderProducts
 from app.db.pg_session import db_connection
 from app.db.sql_enums import OrderStatusEnum
@@ -54,9 +55,11 @@ class OrderService(CheckService):
         try:
             bucket_items = await session.execute(query)
         except SQLAlchemyError as e:
+            logger.error(f"Get user bucket for user {user_id} error: {e}")
             raise e
         all_bucket_items = bucket_items.all()
         if not all_bucket_items:
+            logger.warning(f"Bucket for user {user_id} is empty")
             raise HTTPException(status_code=404, detail="Ваша корзина пуста")
 
         # проверка наличия товаров
@@ -108,9 +111,11 @@ class OrderService(CheckService):
 
             return OrderResponse.model_validate(order_object)
         except SQLAlchemyError as e:
+            logger.error(f"Create order by user {user_id} error: {e}")
             await session.rollback()
             raise e
         except Exception as ex:
+            logger.error(f"Create order by user {user_id} error: {ex}")
             await session.rollback()
             raise ex
 
@@ -126,10 +131,12 @@ class OrderService(CheckService):
         try:
             result = await session.execute(query)
         except SQLAlchemyError as e:
+            logger.error(f"Get orders by user {user_id} error: {e}")
             raise e
 
         records = result.all()
         if not records:
+            logger.warning(f"Orders data of user {user_id} not found")
             raise HTTPException(status_code=404, detail="Нет данных о заказах")
         return [OrderResponse.model_validate(record) for record in records]
 
@@ -155,10 +162,12 @@ class OrderService(CheckService):
         try:
             result = await session.execute(query)
         except SQLAlchemyError as e:
+            logger.error(f"Get order by user {user_id} error: {e}")
             raise e
 
         records = result.all()
         if not records:
+            logger.warning(f"Order {order_id} data of user {user_id} not found")
             raise HTTPException(status_code=404, detail="Нет данных о заказе")
         return [OneOrderResponse.model_validate(record) for record in records]
 
@@ -169,6 +178,7 @@ class OrderService(CheckService):
         try:
             result = await session.execute(query)
         except SQLAlchemyError as e:
+            logger.error(f"Get filtered orders error: {e}")
             raise e
         records = result.scalars().all()
         if not records:
@@ -184,6 +194,7 @@ class OrderService(CheckService):
             result = await session.execute(query)
             await session.commit()
         except SQLAlchemyError as e:
+            logger.error(f"Update order status error: {e}")
             await session.rollback()
             raise e
         record = result.scalar_one_or_none()
